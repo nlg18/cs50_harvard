@@ -1,0 +1,158 @@
+cat filename.sql | sqlite3 movies.db > output.txt
+
+====================================================
+
+TABELAS PRINCIPAIS (2)
+
+movies:
+
+id (PK)
+title
+year
+
+people:
+
+id (PK)
+name
+birth
+
+TABELAS SECUNDÀRIAS(3)
+
+stars:
+
+movie_id (FK REFERENCES movies(id))
+person_id (FK REFERENCES people(id))
+-
+directors:
+
+movie_id (FK REFERENCES movies(id))
+person_id (FK REFERENCES people(id))
+-
+ratings:
+
+movie_id (FK REFERENCES movies(id))
+rating
+votes
+
++++++++
+
+cat 6.sql | sqlite3 movies.db
+
+=========================================
+JOIN:
+
+SELECT col1, col2 FROM  table1
+JOIN table2
+ON table1.col1 = table2.col3;
+=========================================
+7.sql
+
+SELECT something FROM somewhere
+
+é como se fosse FROM (movies JOIN ratings)
+a fonte (FROM) seria uma tabela resultante da junção dessas duas tabelas
+
+
+SELECT movies.title, ratings.rating
+FROM movies
+JOIN ratings
+ON ratings.movie_id = movies.id
+-- WHERE movies.year = 2010
+WHERE year = 2010
+-- GROUP BY ratings.rating // pega em ordem alfabetica um só movies.title para cada valor de ratings.rating
+ORDER BY ratings.rating DESC;
+
+correct:
+SELECT movies.title, ratings.rating
+FROM movies
+JOIN ratings
+ON ratings.movie_id = movies.id
+WHERE year = 2010 and rating IS NOT NULL
+ORDER BY ratings.rating DESC, movies.title ASC;
+
+===================================
+
+8.sql IDENTATION
+
+SELECT name
+FROM people
+WHERE id IN (
+    SELECT person_id
+    FROM stars
+    WHERE movie_id IN (
+        SELECT id
+        FROM movies
+        WHERE  title LIKE "Toy Story"
+    )
+);
+
+=============================================
+
+11.sql
+
+para juntar as tabelas X e Y:
+
+USAR COLUNA A DA TABELA X
+COM VALOR IGUAL
+A COLUNA B DA TABELA Y
+
+
+! listar tabelas necessárias para a query antes de codar !
+
+----
+
+SELECT title
+FROM
+movies junto com (
+    people junto com (
+        stars junto com(
+            movies junto com(
+                ratings
+            )
+        )
+    )
+)
+WHERE people.name = "Chadwick Boseman"
+
+=
+
+SELECT title
+FROM movies
+
+JOIN stars ON people.id = stars.people_id
+JOIN stars ON movies.id = stars.movie_id
+JOIN ratings ON movies.id = ratings.movie_id
+
+WHERE name = "Chadwick Boseman"
+ORDER BY rating
+;
+
+--------------------------------
+
+13.sql
+
+WITH movies_id_with_kevin AS (
+    SELECT movie_id
+    FROM stars
+    WHERE person_id IN (
+        SELECT id
+        FROM people
+        WHERE birth = 1958 AND name = "Kevin Bacon"
+    )
+)
+
+
+SELECT DISTINCT name
+FROM people
+WHERE id IN (
+    SELECT person_id
+    FROM stars
+    WHERE movie_id IN movies_id_with_kevin
+)
+AND name != "Kevin Bacon"
+
+GROUP BY people.name
+;
+ ==============================
+sqlite> .tables
+shows tables inside the db

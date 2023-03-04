@@ -1,0 +1,218 @@
+import sqlite3
+
+-----terminal-----
+sqlite3 filename
+.mode csv
+.import 'dbname.csv' filename
+
+SELECT UPPER(title), COUNT(title)
+FROM shows
+GROUP BY UPPER(title)
+ORDER BY COUNT(title) DESC
+LIMIT 10;
+
+.save filename
+-----CRUD--------
+
+C reate
+    CREATE TABLE shows (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        title VARCHAR(255),
+        genres VARCHAR(255)
+    )
+    ;
+    INSERT INTO shows
+    (title, genres)
+    VALUES
+    ("The Muppet Show", "Comedy, Musical");
+R ead
+    SELECT column
+    FROM table
+    WHERE condition;
+U pdate
+    UPDATE shows
+    SET genres = "Comedy, Musical, Adventure"
+    WHERE title = "The Muppet Show";
+D elete
+    DELETE column
+    FROM table
+    WHERE condition;
+--
+JOIN
+    não faz parte do CRUD pois não realiza uma operação individual,
+    apenas maneja informações facilitando a visualização.
+    a tabela criada é temporária e só existe enquanto a consulta
+    estiver sendo executada.
+    Ao encerrar a operação, a tabela resultante é descartada.
+
+
+CREATE INDEX title_index ON shows (title);
+Este comando cria um índice na coluna "title"
+da tabela "shows" para melhorar a velocidade de
+consulta dos dados baseados no título.
+
+----------------------
+
+SELECT title
+FROM shows
+WHERE id IN (
+    SELECT show_id
+    FROM stars
+    WHERE person_id = (
+        SELECT id
+        FROM people
+        WHERE name = "Steve Carell"
+    )
+)
+;
+
+=
+
+SELECT title
+FROM people
+...> JOIN stars ON people.id = stars.person_id
+...> JOIN shows ON stars.show_id = shows.id
+...> WHERE name = "Steve Carell";
+
+-----------------------
+
+sqlite3 shows
+.schema
+SELECT *
+FROM shows;
+
+INSERT INTO shows
+(Timestamp, title, genres)
+VALUES
+("now", "The Muppet Show", "Comedy, Musical");
+
+-----------------------
+
+AVG
+COUNT
+DISTINCT , para obter valores distintos sem duplicatas
+LOWER
+MAX
+MIN
+UPPER
+
+
+clausulas
+WHERE, resultados correspondentes em uma condição estrita
+LIKE, resultados correspondentes em uma condição menos estrita
+ORDER BY, resultados de ordenação de alguma forma
+LIMIT, limitando o número de resultados
+GROUP BY, agrupando resultados de alguma forma
+
+
+trim()
+strip()
+upper()
+
+
+5  main datatypes:
+BLOB, para "Objeto binário grande", dados binários brutos que podem representar arquivos
+INTEGER
+    smallint
+    integer
+    bigint
+
+NUMERIC, como um número, mas não exatamente um número, como uma data ou hora
+    boolean
+    date
+    datetime
+    numeric(scale, precision)
+    time
+    timestamp
+
+REAL, para valores de ponto flutuante
+    real
+    double precision
+
+TEXT, como strings
+    char(n) specific number n of digits
+    varchar(n) max of n digits
+    text
+
+
+
+As colunas também podem ter atributos adicionais:
+NOT NULL, que especifica que deve haver algum valor
+UNIQUE, o que significa que o valor dessa coluna deve ser único para cada linha da tabela
+PRIMARY KEY, como a coluna id acima, que será usada para identificar de forma única cada linha
+FOREIGN KEY, como a coluna show_id acima que se refere a uma coluna em alguma outra tabela
+
+
+
+
+dont assume ids
+1 quiery
+be objective
+
+
+
+----------------------------------
+
+FAIL CODE:
+rows = db.execute("SELECT likes FROM posts WHERE id = ?", id);
+likes = rows[0]["likes"]
+db.execute("UPDATE posts SET likes = ? WHERE id = ?", likes + 1, id);
+BECAUSE MAKES:
+SQL Injection Attack:
+    Mas, para aplicativos com vários servidores, cada um deles pode
+    tentar adicionar curtidas ao mesmo tempo. Dois servidores, respondendo
+    a dois usuários diferentes, podem obter o mesmo número inicial de
+    curtidas, já que a primeira linha do código é executada ao mesmo
+    tempo em cada servidor. Em seguida, ambos definirão o mesmo novo
+    número de curtidas, embora deva haver dois incrementos separados.
+    Para resolver esse problema, o SQL oferece suporte a transações,
+    nas quais podemos bloquear linhas em um banco de dados, de forma
+    que um determinado conjunto de ações aconteçam juntas, com sintaxe como:
+
+good  ?", password
+bad  '{password}'
+
+BEGIN TRANSACTION
+    lock a table/row in a table
+
+    db.execute("BEGIN TRANSACTION")
+rows = db.execute("SELECT likes FROM posts WHERE id = ?", id);
+likes = rows[0]["likes"]
+db.execute("UPDATE posts SET likes = ? WHERE id = ?", likes + 1, id);
+db.execute("COMMIT")
+O banco de dados garantirá que todas as consultas intermediárias sejam executadas juntas.
+Outro exemplo pode ser de dois colegas de quarto e uma geladeira
+compartilhada em seu dormitório. O primeiro colega de quarto chega
+em casa e vê que não há leite na geladeira. Assim, o primeiro
+colega de quarto sai na loja para comprar leite e, enquanto
+eles estão na loja, o segundo colega de quarto chega em casa,
+vê que não há leite e sai para outra loja para pegar leite também.
+Mais tarde, haverá duas jarras de leite na geladeira.
+
+COMMIT
+
+    ROLLBACK
+
+Podemos resolver esse problema trancando a geladeira para que nosso colega de quarto não verifique se há leite antes de voltarmos.
+
+
+2 PEOPLE TRYING TO UPDATE THE VARIABLES VALUE AT THE SAME TIME
+---------------------------------
+
+SELECT col1, col2 FROM tabke1 WHERE col3 =/IN (SELECT ...) ORDER BY col2;
+
+SELECT col1, col2 FROM  table1
+JOIN table2
+ON table1.col1 = table2.col3
+
+-------------------------------------
+==================================================
+
+cat 12.sql | sqlite3 movies.db
+=========================================
+JOIN:
+
+SELECT col1, col2 FROM  table1
+JOIN table2
+ON table1.col1 = table2.col3;
