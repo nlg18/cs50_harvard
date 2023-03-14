@@ -1,2 +1,2 @@
 # cs50_harvard
-some codes i wrote between cs50 classes
+here we have some codes, envolving pointers and memory allocation, manipulating a database, 
